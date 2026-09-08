@@ -1,0 +1,386 @@
+
+---How to check current remote session
+COREbaba-31#sh users
+    Line       User       Host(s)              Idle       Location
+   0 con 0                idle                 00:56:44   
+   1 vty 0                idle                 00:22:47 10.31.1.10
+   2 vty 1                10.31.100.8          00:22:44 10.31.1.10
+*  3 vty 2                idle                 00:00:00 10.31.1.10
+
+---- vty is up to 0-14 simultaneous remote connection
+---- con is only 1:1
+
+===================================================================================================
+
+---How to check open ports:
+C:\>nmap -v 10.31.1.2
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-09-08 09:54 +0800
+Initiating ARP Ping Scan at 09:54
+Scanning 10.31.1.2 [1 port]
+Completed ARP Ping Scan at 09:54, 0.03s elapsed (1 total hosts)
+Initiating Parallel DNS resolution of 1 host. at 09:54
+Completed Parallel DNS resolution of 1 host. at 09:54, 0.51s elapsed
+Initiating SYN Stealth Scan at 09:54
+Scanning 10.31.1.2 [1000 ports]
+Discovered open port 23/tcp on 10.31.1.2
+Discovered open port 443/tcp on 10.31.1.2
+Discovered open port 80/tcp on 10.31.1.2
+Increasing send delay for 10.31.1.2 from 0 to 5 due to 45 out of 148 dropped probes since last increase.
+Completed SYN Stealth Scan at 09:54, 15.42s elapsed (1000 total ports)
+Nmap scan report for 10.31.1.2
+Host is up (0.0023s latency).
+Not shown: 997 closed tcp ports (reset)
+PORT    STATE SERVICE
+23/tcp  open  telnet
+80/tcp  open  http
+443/tcp open  https
+MAC Address: 08:17:35:10:DF:40 (Cisco Systems)
+
+Read data files from: C:\Program Files (x86)\Nmap
+Nmap done: 1 IP address (1 host up) scanned in 16.26 seconds
+           Raw packets sent: 1086 (47.768KB) | Rcvd: 1001 (40.040KB)
+		   
+===================================================================================================
+
+Used of switch
+1. POE
+2. SVI
+3. DHCP
+4. VC - VLAN Creation
+   VM - VLAN Management
+
+======================================
+
+
+COREbaba-31#sh vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Fa0/1, Fa0/5, Fa0/7, Fa0/9
+10   WIFIVLAN                         active    Fa0/2, Fa0/4
+50   IPCameraVLAN                     active    Fa0/6, Fa0/8
+69   vlanNIrobert                     active    
+70   EXTRAVLAN                        active    
+71   HRD-POLICY                       active    
+100  VOICEVLAN                        active    Fa0/3, Fa0/5, Fa0/7
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+1005 trnet-default                    act/unsup 
+
+=========================================
+
+COREbaba-31#show ip dhcp binding
+Bindings from all pools not associated with VRF:
+IP address          Client-ID/              Lease expiration        Type
+                    Hardware address/
+                    User name
+10.31.1.103         0100.5d73.f585.80       Mar 02 1993 12:57 AM    Automatic
+10.31.10.101        0100.5d73.f585.80       Mar 02 1993 12:58 AM    Automatic
+10.31.100.101       0063.6973.636f.2d30.    Mar 02 1993 12:59 AM    Automatic
+                    3032.342e.3134.3234.
+                    2e33.3561.302d.4661.
+                    302f.30
+10.31.100.102       01cc.d8c1.fb10.dd       Mar 02 1993 12:58 AM    Automatic
+10.31.100.103       016c.fa89.72f0.a9       Mar 02 1993 12:58 AM    Automatic
+
+========================================
+
+CUCM-31#show ip int brief
+Interface                  IP-Address      OK? Method Status                Protocol
+FastEthernet0/0            10.31.100.8     YES manual up                    up      
+FastEthernet0/1/0          unassigned      YES unset  up                    down    
+FastEthernet0/1/1          unassigned      YES unset  up                    down    
+FastEthernet0/1/2          unassigned      YES unset  up                    down    
+FastEthernet0/1/3          unassigned      YES unset  up                    down    
+FastEthernet0/1/4          unassigned      YES unset  up                    down    
+FastEthernet0/1/5          unassigned      YES unset  up                    down    
+FastEthernet0/1/6          unassigned      YES unset  up                    down    
+FastEthernet0/1/7          unassigned      YES unset  up                    down    
+FastEthernet0/1/8          unassigned      YES unset  up                    down    
+FastEthernet0/2/0          unassigned      YES unset  administratively down down    
+FastEthernet0/2/1          unassigned      YES unset  administratively down down    
+Vlan1                      unassigned      YES unset  up                    down
+
+========================================
+
+COREbaba-31#sh mac address-table 
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+ All    0100.0ccc.cccc    STATIC      CPU
+ All    0100.0ccc.cccd    STATIC      CPU
+ All    0180.c200.0000    STATIC      CPU
+   1    00be.43ee.cdda    DYNAMIC     Fa0/1
+   1    0817.3510.df0a    DYNAMIC     Fa0/10
+   1    0817.3510.df0b    DYNAMIC     Fa0/11
+   1    0817.3510.df0c    DYNAMIC     Fa0/12
+   1    6cfa.8972.f0a9    DYNAMIC     Fa0/7
+   1    ccd8.c1fb.10dd    DYNAMIC     Fa0/5
+  10    0000.5e00.0101    DYNAMIC     Fa0/2
+  10    005d.73f5.8580    DYNAMIC     Fa0/2
+  10    64f6.9dde.8bf5    DYNAMIC     Fa0/4
+  50    001a.0709.c26b    DYNAMIC     Fa0/8
+ 100    0024.1424.35a0    DYNAMIC     Fa0/3
+ 100    6cfa.8972.f0a9    DYNAMIC     Fa0/7
+ 100    ccd8.c1fb.10dd    DYNAMIC     Fa0/5
+Total Mac Addresses for this criterion: 33
+
+======================================
+
+CUCM-31#sh run | section ephone
+ no auto-reg-ephone
+ max-ephones 5
+ephone-dn  1
+ number 3111
+ephone-dn  2
+ number 3122
+ephone-dn  3
+ number 3133
+ephone-dn  4
+ number 3144
+ephone-dn  5
+ number 3155
+ephone-dn  6
+ number 3166
+ephone-dn  7
+ number 3177
+ephone-dn  8
+ number 3188
+ephone-dn  9
+ number 3199
+ephone-dn  10
+ number 3198
+ephone  1
+ device-security-mode none
+ video
+ mac-address CCD8.C1FB.10DD
+ max-calls-per-button 3
+ busy-trigger-per-button 2
+ type 8945
+ button  1:8 2:7 3:6 4:5
+ephone  2
+ device-security-mode none
+ video
+ mac-address 6CFA.8972.F0A9
+ max-calls-per-button 3
+ busy-trigger-per-button 2
+ type 8945
+ button  1:4 2:3 3:2 4:1
+
+
+==============================
+
+EDGE-31#sh cdp neighbors 
+Capability Codes: R - Router, T - Trans Bridge, B - Source Route Bridge
+                  S - Switch, H - Host, I - IGMP, r - Repeater, P - Phone, 
+                  D - Remote, C - CVTA, M - Two-port Mac Relay 
+
+Device ID        Local Intrfce     Holdtme    Capability  Platform  Port ID
+COREbaba-31      Gig 0/0/0         133             R S I  WS-C3560- Gig 0/1
+PLDTmETROeTHERNET
+                 Gig 0/0/1         149              S I   WS-C2960X Gig 0/25
+
+Total cdp entries displayed : 2
+
+=============================
+
+EDGE-31#sh ip route ospf
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is not set
+
+      10.0.0.0/8 is variably subnetted, 51 subnets, 2 masks
+O        10.11.1.0/24 [110/3] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+O        10.11.10.0/24 [110/3] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+O        10.11.11.0/24 [110/2] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+O        10.11.50.0/24 [110/3] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+O        10.11.100.0/24 [110/3] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+O        10.12.1.0/24 [110/3] via 200.0.0.12, 00:08:10, GigabitEthernet0/0/1
+O        10.12.10.0/24 [110/3] via 200.0.0.12, 00:08:10, GigabitEthernet0/0/1
+O        10.12.12.0/24 [110/2] via 200.0.0.12, 00:08:10, GigabitEthernet0/0/1
+O        10.12.50.0/24 [110/3] via 200.0.0.12, 00:08:10, GigabitEthernet0/0/1
+O        10.12.100.0/24 [110/3] via 200.0.0.12, 00:07:41, GigabitEthernet0/0/1
+O        10.21.1.0/24 [110/3] via 200.0.0.21, 00:32:50, GigabitEthernet0/0/1
+O        10.21.10.0/24 [110/3] via 200.0.0.21, 00:32:50, GigabitEthernet0/0/1
+O        10.21.21.0/24 [110/2] via 200.0.0.21, 00:34:21, GigabitEthernet0/0/1
+O        10.21.50.0/24 [110/3] via 200.0.0.21, 00:32:50, GigabitEthernet0/0/1
+O        10.21.100.0/24 [110/3] via 200.0.0.21, 00:32:50, GigabitEthernet0/0/1
+O        10.31.1.0/24 [110/2] via 10.31.31.4, 00:52:39, GigabitEthernet0/0/0
+O        10.31.10.0/24 [110/2] via 10.31.31.4, 00:52:39, GigabitEthernet0/0/0
+O        10.31.50.0/24 [110/2] via 10.31.31.4, 00:52:39, GigabitEthernet0/0/0
+O        10.31.100.0/24 [110/2] via 10.31.31.4, 00:51:46, GigabitEthernet0/0/0
+O        10.42.1.0/24 [110/3] via 200.0.0.42, 00:46:15, GigabitEthernet0/0/1
+O        10.42.10.0/24 [110/3] via 200.0.0.42, 00:46:15, GigabitEthernet0/0/1
+O        10.42.42.0/24 [110/2] via 200.0.0.42, 00:47:31, GigabitEthernet0/0/1
+O        10.42.50.0/24 [110/3] via 200.0.0.42, 00:46:15, GigabitEthernet0/0/1
+O        10.42.100.0/24 [110/3] via 200.0.0.42, 00:45:27, GigabitEthernet0/0/1
+O        10.51.1.0/24 [110/3] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+O        10.51.10.0/24 [110/3] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+O        10.51.50.0/24 [110/3] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+O        10.51.51.0/24 [110/2] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+O        10.51.100.0/24 [110/3] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+O        10.71.1.0/24 [110/3] via 200.0.0.71, 00:31:44, GigabitEthernet0/0/1
+O        10.71.10.0/24 [110/3] via 200.0.0.71, 00:31:44, GigabitEthernet0/0/1
+O        10.71.50.0/24 [110/3] via 200.0.0.71, 00:31:44, GigabitEthernet0/0/1
+O        10.71.71.0/24 [110/2] via 200.0.0.71, 00:31:44, GigabitEthernet0/0/1
+O        10.71.100.0/24 [110/3] via 200.0.0.71, 00:31:27, GigabitEthernet0/0/1
+O        10.81.1.0/24 [110/3] via 200.0.0.81, 00:38:26, GigabitEthernet0/0/1
+O        10.81.10.0/24 [110/3] via 200.0.0.81, 00:38:26, GigabitEthernet0/0/1
+O        10.81.50.0/24 [110/3] via 200.0.0.81, 00:38:26, GigabitEthernet0/0/1
+O        10.81.81.0/24 [110/2] via 200.0.0.81, 00:38:51, GigabitEthernet0/0/1
+O        10.81.100.0/24 [110/3] via 200.0.0.81, 00:38:26, GigabitEthernet0/0/1
+O        10.82.1.0/24 [110/3] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+O        10.82.10.0/24 [110/3] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+O        10.82.50.0/24 [110/3] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+O        10.82.82.0/24 [110/2] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+O        10.82.100.0/24 [110/3] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+O        10.92.1.0/24 [110/3] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+O        10.92.10.0/24 [110/3] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+O        10.92.50.0/24 [110/3] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+O        10.92.92.0/24 [110/2] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+O        10.92.100.0/24 [110/3] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+      11.0.0.0/32 is subnetted, 1 subnets
+O        11.0.0.1 [110/2] via 200.0.0.11, 00:31:43, GigabitEthernet0/0/1
+      12.0.0.0/32 is subnetted, 1 subnets
+O        12.0.0.1 [110/2] via 200.0.0.12, 00:08:10, GigabitEthernet0/0/1
+      21.0.0.0/32 is subnetted, 1 subnets
+O        21.0.0.1 [110/2] via 200.0.0.21, 00:34:21, GigabitEthernet0/0/1
+      41.0.0.0/32 is subnetted, 1 subnets
+O        41.0.0.1 [110/2] via 200.0.0.41, 00:47:48, GigabitEthernet0/0/1
+      42.0.0.0/32 is subnetted, 1 subnets
+O        42.0.0.1 [110/2] via 200.0.0.42, 00:47:31, GigabitEthernet0/0/1
+      51.0.0.0/32 is subnetted, 1 subnets
+O        51.0.0.1 [110/2] via 200.0.0.51, 00:47:48, GigabitEthernet0/0/1
+      71.0.0.0/32 is subnetted, 1 subnets
+O        71.0.0.1 [110/2] via 200.0.0.71, 00:31:44, GigabitEthernet0/0/1
+      81.0.0.0/32 is subnetted, 1 subnets
+O        81.0.0.1 [110/2] via 200.0.0.81, 00:38:51, GigabitEthernet0/0/1
+      82.0.0.0/32 is subnetted, 1 subnets
+O        82.0.0.1 [110/2] via 200.0.0.82, 00:40:51, GigabitEthernet0/0/1
+      92.0.0.0/32 is subnetted, 1 subnets
+O        92.0.0.1 [110/2] via 200.0.0.92, 00:24:45, GigabitEthernet0/0/1
+
+==================================================
+
+	0-9			0-255		0-9, A-F
+
+2000		2.0.0.0		:2000:
+
+
+
+-1			6.7.254.255		:67EF:
+6790
++1			6.7.255.1		:67F1:
+
+-1			5.3.254.254		:53EE:
+5389		5.3.254.255		:53EF:
++1			5.3.
+
+=====================
+
+config t
+ vlan 25
+  name taskus.com
+  exit
+ int vlan 25
+  ip add 192.168.0.65 255.255.255.192
+  ip ospf 1 area 0
+  no shut
+  exit
+ ip dhcp excluded-add 192.168.0.65 192.168.0.75  
+ ip dhcp pool taskus.com
+  network 192.168.0.64 255.255.255.192
+  default-router 192.168.0.65
+  domain-name taskus.com
+  dns-server 10.31.1.10
+  option 150 ip 10.31.100.8
+ int fa 0/5
+  switchport voice vlan 25
+  shut
+  no shut
+  end
+show ip dhcp binding
+
+
+
+
+
+
+config t
+ vlan 26
+  name teleperformance.com
+  exit
+ int vlan 26
+  ip add 192.168.1.65 255.255.255.192
+  ip ospf 1 area 0
+  no shut
+  exit
+ ip dhcp excluded-add 192.168.1.65 192.168.1.85  
+ ip dhcp pool teleperformance.com
+  network 192.168.1.64 255.255.255.192
+  default-router 192.168.1.65
+  domain-name teleperformance.com
+  dns-server 10.31.1.10
+  option 150 ip 10.31.100.8
+ int fa 0/7
+  switchport voice vlan 26
+  shut
+  no shut
+  end
+show ip dhcp binding
+
+
+
+
+!@CoreTAAS
+conf t
+ ip routing
+ int fa0/9
+  no shut
+  no sw
+  ip add 10.100.25.45 255.255.255.240
+  end
+
+!@CoreBABA
+conf t
+ ip routing
+ int fa0/9
+  no shut
+  no sw
+  ip add 10.100.25.49 255.255.255.240
+  end
+
+
+
+
+
+
+Static Routing
+
+!@R1
+conf t
+ ip route [dest] [mask] [int/next-hop]
+ end
+
+
+!@R1
+conf t
+ ip route 209.165.200.230 255.255.255.255 209.165.200.226
+ end
+ping 10.1.1.10
+
+
+conf t
+ ip route 192.168.1.1 255.255.255.255 209.165.200.225
+ end
