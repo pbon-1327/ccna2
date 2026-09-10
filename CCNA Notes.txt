@@ -384,3 +384,657 @@ ping 10.1.1.10
 conf t
  ip route 192.168.1.1 255.255.255.255 209.165.200.225
  end
+ 
+ 
+
+
+===================================================================
+
+Day 3
+
+   A company plans to deploy 64 new sites.
+1. Subnet 10.30.64.0/19 (maximize the number of hosts) using the third subnet.
+
+  - Assign the first usable IP to e0/0 on Sw101
+  - Assign the last usable IP address to e0/0 on Sw102
+  
+C = 64 new sites = 6 bits
+A = /19 + 6 bits = /25 (4th, 128i)
+I = 10.30.64.128 /25
+
+First Usable: 10.30.64.129
+Last Usable: 10.30.64.254
+BC: 10.30.64.255
+Not network: 10.30.65.0
+
+
+
+All physical cabling is in place. Routers R3 and R4 are fully configured and inaccessible. Configure static routes for various connectivity to the ISP and the LAN that resides on R4.
+
+1. Configure a route on R1 to ensure that R1 prefers R2 when traffic is
+destined to the server only.
+
+2. Configure a default route on R2 to the ISP
+
+3. Configure a route on R1 to ensure that R1 will use R2 for the R4 LAN if the link
+fails between R3 and R4
+
+4. Configure a route on R1 to ensure that R1 prefers R3 when traffic is destined to
+the R4 LAN at 10.0.41.0/24
+
+
+
+
+10.30.64.0/19
+256 host
+
+C: 256 host = 9bits
+S: /19 - 9 = /10 (2nd, 64i)
+I: 10.64.0.0 /10
+
+1st Valid: 10.64.1.0
+Last Valid: 10.64.126.0
+BC: 10.64.127.0
+Not network: 10.128.0.0
+
+
+
+
+10.30.64.0/19
+64 sites
+C: 64 sites = 6 bits
+A: /19 + 6 bits = /25 (4th, 128i)
+I: 10.30.64.128
+
+1st Valid: 10.30.65.1
+Last Valid: 10.30.65.126
+BC: 10.30.65.127
+
+
+10.30.64.0
+10.30.64.128
+10.30.65.0
+10.30.65.128
+
+
+ExamTIP:
+CSI: host, devices, routers (physical devices)
+CAI: sites, subnets, offices
+
+Ex.
+192.168.1.0/24
+
+
+========================================================
+
+Routing protocol
+
+
+MRBODDS
+
+MPLS
+RIP
+BGP
+OSPF
+DEIRGP
+DEFAULT
+STATIC
+
+
+WILDCARDS
+
+
+10.64.1.5/12 = 255.240.0.0 = 2nd, 16i = 0.15.255.255
+192.168.1.100/27 = 255.255.255.224 = 4th, 32i = 0.0.0.31
+172.16.40.56/21 = 255.255.248.0 = 3rd, 8i = 0.0.7.255
+
+OSPF:
+router ospf 1
+network 10.64.0.0 0.15.255.255 area 0
+network 192.168.1.96 0.0.0.31 area 0
+network 172.16.40.0 0.0.7.255 area 0
+end
+
+EIGRP
+router eigrp 90
+network 10.64.0.0 0.15.255.255
+network 192.168.1.96 0.0.0.31 
+network 172.16.40.0 0.0.7.255
+end
+
+BGP:
+router bgp 6534
+network 10.64.0.0 mask 255.240.0.0
+network 192.168.1.96 mask 255.255.255.224
+network 172.16.40.0 mask 255.255.248.0
+end
+
+
+
+Checking gateway
+
+C:\Users\Administrator>route print
+===========================================================================
+Interface List
+ 27...e0 d0 45 bb 9c f2 ......Intel(R) Wi-Fi 6E AX210 160MHz
+  4...e0 d0 45 bb 9c f3 ......Microsoft Wi-Fi Direct Virtual Adapter
+ 31...e2 d0 45 bb 9c f2 ......Microsoft Wi-Fi Direct Virtual Adapter #2
+ 29...00 50 56 c0 00 01 ......VMware Virtual Ethernet Adapter for VMnet1
+ 11...00 50 56 c0 00 08 ......VMware Virtual Ethernet Adapter for VMnet8
+ 32...00 50 56 c0 00 02 ......VMware Virtual Ethernet Adapter for VMnet2
+ 19...00 50 56 c0 00 03 ......VMware Virtual Ethernet Adapter for VMnet3
+ 16...00 50 56 c0 00 04 ......VMware Virtual Ethernet Adapter for VMnet4
+ 15...00 50 56 c0 00 05 ......VMware Virtual Ethernet Adapter for VMnet5
+ 26...00 50 56 c0 00 0f ......VMware Virtual Ethernet Adapter for VMnet15
+ 18...00 50 56 c0 00 10 ......VMware Virtual Ethernet Adapter for VMnet16
+  1...........................Software Loopback Interface 1
+ 30...00 be 43 ee cd da ......Realtek PCIe GbE Family Controller
+===========================================================================
+
+IPv4 Route Table
+===========================================================================
+Active Routes:
+Network Destination        Netmask          Gateway       Interface  Metric
+          0.0.0.0          0.0.0.0         10.3.3.1       10.3.3.131      2   --------> If you have 2 gateway follow the below command
+         10.0.0.0        255.0.0.0        10.31.1.4       10.31.1.10    101
+         10.3.3.0    255.255.255.0         On-link        10.3.3.131    257
+       10.3.3.131  255.255.255.255         On-link        10.3.3.131    257
+	   
+
+C:\>route add 10.0.0.0 mask 255.0.0.0 10.31.1.4 -p
+	   
+
+
+cabcc
+
+
+How to route in Linux
+[root@iou ~]# ip route show
+10.69.255.0/29 dev eth2  proto kernel  scope link  src 10.69.255.5 
+208.8.8.0/24 dev eth0  proto kernel  scope link  src 208.8.8.221 
+default via 208.8.8.2 dev eth0 
+[root@iou ~]# ip route add default via 208.8.8.2 dev eth0
+
+[root@iou ~]# ip route del default
+[root@iou ~]# ip route add default via 208.8.8.2 dev eth0
+[root@iou ~]# ip route show
+
+
+Windows:
+route add 0.0.0.0 mask 0.0.0.0 
+
+
+C:\>tracert 8.8.8.8
+
+Tracing route to dns.google [8.8.8.8]
+over a maximum of 30 hops:
+
+  1     5 ms     1 ms     1 ms  10.3.3.1
+  2     4 ms     3 ms     4 ms  10.10.1.1
+  3     2 ms     3 ms     3 ms  192.168.100.1
+  4     5 ms     6 ms     7 ms  10.56.0.1
+  5     *        *        *     Request timed out.
+  6     5 ms     5 ms     4 ms  161.49.4.242.convergeict.com [161.49.4.242]
+  7     8 ms     7 ms     7 ms  161.49.1.14.convergeict.com [161.49.1.14]
+  8     5 ms     5 ms     5 ms  161.49.6.151.convergeict.com [161.49.6.151]
+  9     9 ms     8 ms     8 ms  142.250.172.244
+ 10     7 ms     7 ms     6 ms  142.251.251.45
+ 11     6 ms     6 ms     6 ms  172.253.67.175
+ 12     7 ms     5 ms     5 ms  dns.google [8.8.8.8]
+
+Trace complete.
+
+
+
+P1#show alias
+Exec mode aliases:
+  h                     help
+  lo                    logout
+  p                     ping
+  r                     resume
+  s                     show
+  u                     undebug
+  un                    undebug
+  w                     where
+  bp                    show ip int brief | ex una
+  sr                    show ip route
+  cn                    show cdp nei
+  sp                    show ip protocols
+  bp6                   show ipv6 int brief | exc down
+  sr6                   show ipv6 route
+  sbs6                  show bgp ipv6 summ
+  sc                    show run | sec
+
+
+P1#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+P1(config)#int e0/0
+P1(config-if)#no shut
+P1(config-if)#ip add 10.2.1.101 255.255.255.0
+
+
+IR Elastic
+http://192.168.102.133/otrs/customer.pl
+user1
+C1sc0123
+
+http://192.168.102.133/otrs/index.pl
+admin
+C1sc0123
+
+
+
+P2#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+P2(config)#int eth1/0
+P2(config-if)#no shut
+P2(config-if)#ip add 10.2.1.102 255.255.255.0
+P2(config-if)#end
+P2#bp
+Interface                  IP-Address      OK? Method Status                Protocol
+Ethernet1/0                10.2.1.102      YES manual up                    up      
+Ethernet3/0                172.16.29.102   YES TFTP   administratively down down  
+
+
+
+
+A1(config)#int e0/0
+A1(config-if)#switch
+A1(config-if)#switchport mode acc
+A1(config-if)#switchport mode access 
+A1(config-if)#switch
+A1(config-if)#switchport access vlan 10
+A1(config-if)#end
+A1#sh vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Et1/1, Et1/2, Et1/3, Et2/0
+                                                Et2/1, Et2/2, Et2/3, Et3/1
+                                                Et3/2, Et3/3
+10   Management                       active    Et0/0
+20   DNS                              active    
+100  Server                           active    
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+1005 trnet-default                    act/unsup 
+
+
+A2#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+A2(config)#int e1/0
+A2(config-if)#swit
+A2(config-if)#switchport mode acc
+A2(config-if)#switchport mode access 
+A2(config-if)#switch
+A2(config-if)#switchport access vlan 10
+A2(config-if)#end
+A2#sh vlan brief
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Et1/1, Et1/2, Et1/3, Et2/0
+                                                Et2/1, Et2/2, Et2/3, Et3/1
+                                                Et3/2, Et3/3
+10   Management                       active    Et1/0
+20   DNS                              active    
+100  Server                           active    
+1002 fddi-default                     act/unsup 
+1003 token-ring-default               act/unsup 
+1004 fddinet-default                  act/unsup 
+1005 trnet-default                    act/unsup 
+
+
+task1: static route to 192.168.1.128/27 for p1 and p2
+
+
+
+P1#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+P1(config)#ip route 192.168.1.128 255.255.255.224 10.2.1.1
+
+
+P1#traceroute 192.168.1.130
+Type escape sequence to abort.
+Tracing the route to core2v100.rivanit.com (192.168.1.130)
+VRF info: (vrf in name/id, vrf out name/id)
+  1 core1v10.rivanit.com (10.2.1.1) 0 msec 1 msec 0 msec
+  2 core2v100.rivanit.com (192.168.1.130) 0 msec *  0 msec
+  
+config t
+ip route 192.168.1.130 255.255.255.255 10.2.1.2
+
+32
+64
+96
+128
+
+task2: configuring default gateway, gateway of last resort, 
+config t
+ip route 0.0.0.0 0.0.0.0 10.2.1.1 1
+ip route 0.0.0.0 0.0.0.0 10.2.1.2 5
+do sh ip route static
+end
+
+task 3: learn eigrp for multinational companies
+sh ip route connected | inc c
+
+
+
+task 4: BGP (Border gateway protocol)
+config t
+router bgp 1
+bgp router-id 1.1.1.1
+bgp log-neighbor-changes
+neighbor 207.7.7.2 remote-as 2
+neighbor 209.9.9.3 remote-as 3
+neighbor 208.8.8.4 remote-as 45
+network 207.7.7.0 mask 255.255.255.0
+network 209.9.9.0 mask 255.255.255.0
+network 208.8.8.0 mask 255.255.255.0
+network 10.1.1.0 mask 255.255.255.0
+do sh ip bgp summary
+sh sh ip bgp neighbor
+
+
+physical layer: re
+netsh wlan show profile name="3F-Rivan" key=clear
+
+L2/L3: nmap -sP 10.3.3.0/24
+
+
+L4: nmap -v 10.3.3.121
+
+L5: session: net use \\10.3.3.121\ipc$
+
+3 way handshake: sa-sae
+			   hacker/source
+			   SP: 50123     ------SYN-------> SP: 445
+			   DP: 445                         DP: 50123
+							<------ACK-------
+							------SYN/ACK--->
+							established			
+						tcp.flags.syn == 1
+
+net use x: /delete
+net use x: \\10.3.3.111\c$
+
+netstat -n -p tcp | findstr 445
+
+
+==============================================================
+Day 4
+
+Linux:
+ip addr
+
+
+192.168.102.11    - UTM-PH
+192.168.102.12    - UTM-JP
+
+
+netstat -s -p tcp
+netstat -n -p tcp
+nmap -v 208.8.8.100 - only for TCP
+nmap -sU --min-rate 2000 208.8.8.100
+
+
+youporn - 66.254.114.79
+pornhub.com - 66.254.114.41
+redtube.com - 66.254.114.238
+faketaxi.com - 66.254.114.234
+bangbros.com - 66.254.114.234
+bangbus.com - 66.254.114.234
+pinayflix.com - 104.21.55.88
+xhamster.com - 104.16.3.81
+iyottube.com - 208.77.20.35
+
+
+!@UTM-PH
+config t
+ no ip access-list standard FWP1
+ ip access-list standard FWP1
+  deny 66.254.114.0	 0.0.0.255
+  deny 104.0.0.0 0.255.255.255
+  deny 208.77.20.35 0.0.0.0
+  permit any
+ int gi 1
+  ip access-group FWP1 in
+  end
+show ip access-list int g1
+
+Don't forget this to enter
+UTM-PH(config)#ip domain look
+UTM-PH(config)#ip domain lookup 
+UTM-PH(config)#ip name-
+UTM-PH(config)#ip name-server 8.8.8.8
+
+config t
+ no ip access-list standard FWP2
+ ip access-list standard FWP2
+  deny 104.20.42.168	 0.0.0.0
+  deny 50.6.160.47		 0.0.0.0
+  deny 184.168.125.216 	 0.0.0.0
+  deny 155.137.92.102    0.0.0.0
+  permit any
+ int gi 1
+  ip access-group FWP2 in
+  end
+show ip access-list int g1
+
+
+
+
+
+!@UTM-PH
+config t
+ int g1
+  ip add 208.8.8.100 255.255.255.0 secondary
+  no shut
+  exit
+ ip host www.bet100.com 208.8.8.100
+ service finger
+ service tcp-small-servers
+ service udp-small-servers
+ ip dns server
+ ip http server
+ ip http secure-server
+ telephony-service
+  no auto-reg-ephone
+  max-ephones 5
+  max-dn 20
+  ip source-address 208.8.8.11 port 2000
+  exit
+ voice service voip
+  allow-connections h323 to sip
+          
+  allow-connections sip to h323
+  allow-connections sip to sip
+  supplementary-service h450.12
+ sip
+   bind control source-interface g1
+   bind media source-interface g1
+   registrar server expires max 600 min 60
+ voice register global
+  mode cme
+  source-address 208.8.8.11 port 5060
+  max-dn 12
+  max-pool 12
+  authenticate register
+  create profile sync syncinfo.xml
+  end
+  
+  
+  
+!@UTM-PH
+conf t
+ no ip access-list extended FWP4
+ ip access-list extended FWP4
+ permit tcp Any host 208.8.8.100 eq 80 log
+ permit tcp Any host 208.8.8.100 eq 443 log
+ permit icmp Any host 208.8.8.100 log
+ permit tcp Any host 208.8.8.100 eq 22 log
+ permit tcp Any host 208.8.8.100 eq 53 log
+ Int gi 1
+  ip access-group FWP4 in
+  end
+  
+  
+UTM-PH#sh run | sec int
+
+
+conf t
+ no ip access-list extended FWP5
+ ip access-list extended FWP5
+ permit tcp Any host 208.8.8.100 eq 23 log
+ permit tcp Any host 208.8.8.100 eq 3306 log 
+ permit tcp Any host 208.8.8.100 eq 53 log 
+ permit tcp Any host 208.8.8.100 eq 21 log 
+ permit icmp Any host 208.8.8.100 log
+ Int gi 1
+  ip access-group FWP5 in
+  end
+ 
+sh run | sec FWP5
+ ip access-group FWP5 in
+ip access-list extended FWP5
+ 10 permit tcp any host 208.8.8.100 eq telnet log
+ 20 permit tcp any host 208.8.8.100 eq 3306 log
+ 30 permit tcp any host 208.8.8.100 eq domain log
+ 40 permit tcp any host 208.8.8.100 eq ftp log
+ 50 permit icmp any host 208.8.8.100 log
+
+How to add/remove
+conf t
+ ip access-list extended FWP5
+ no 20 permit tcp any host 208.8.8.100 eq 3306 log
+ 20 permit tcp any host 208.8.8.100 eq 25 log
+ 
+
+conf t
+ no ip access-list extended FWP6
+ ip access-list extended FWP6
+ permit tcp Any host 208.8.8.100 eq 2000 log
+ permit tcp Any host 208.8.8.100 eq 5060 log
+ permit tcp Any host 208.8.8.100 eq 143 log
+ permit tcp Any host 208.8.8.100 eq 25 log 
+ permit tcp Any host 208.8.8.100 eq 110 log 
+ permit tcp Any host 208.8.8.100 eq 21 log
+ permit udp Any host 208.8.8.100 eq 69 log 
+ permit udp Any host 208.8.8.100 eq 123 log
+ Int gi 1
+  ip access-group FWP6 in
+  end
+
+
+conf t
+ monitor session 1 source interface fa0/3, fa0/5, fa0/7
+ monitor session 1 destination interface fa0/1, fa0/9
+ end
+
+to remove:
+no monitor session 1
+
+conf t
+ ip route 10.11.11.96 255.255.255.224 208.8.8.11
+ end
+ping 10.11.11.101
+
+
+
+Linux:
+ssh -l admin 208.8.8.12
+
+
+
+NAT
+1. Identify INSIDE and OUTSIDE
+conf t
+ int g1
+  ip nat outside
+ int g3
+  ip nat inside
+
+
+2. Define traffic
+conf t
+ ip access-list extended NAT
+  permit ip 10.21.21.208 0.0.0.15 any
+  end
+
+3. 1:1 NAT
+conf t
+ ip nat inside source static 10.11.11.101 208.8.8.72
+ end
+show ip nat translations
+
+4. Many:1 NAT (PAT)
+conf t
+ ip nat inside source list NAT int gi1 overload
+ end
+show ip nat translations
+
+If there is no default gateway:
+ip route 0.0.0.0 0.0.0.0 208.8.8.2
+
+PORT Forwarding
+conf t
+ ip nat inside source static tcp 10.21.21.211 80 208.8.8.200 8080
+ ip nat inside source static tcp 10.21.21.211 443 208.8.8.200 8443
+ ip nat inside source static tcp 10.21.21.211 22 208.8.8.200 2222
+ end
+ 
+
+PC-JP 80 208.8.8.200:11
+
+=======================================================
+
+
+FBI standard port
+PORT     STATE  SERVICE
+80/tcp   open   http
+113/tcp  closed ident
+443/tcp  open   https
+8080/tcp open   http-proxy
+8443/tcp open   https-alt
+
+
+
+
+NETOPS
+root
+C1sc0123
+
+netstat -r
+
+
+PAM Server login
+admin
+C1sc0123
+
+
+1. Setup SSH
+!@UTM-PH
+conf t
+ ip domain name ccna.sec
+ !
+ crypto key generate rsa modulus 2048 label key exportable
+ ip ssh version 2
+ ip ssh rsa keypair-name key
+ crypto key export rsa key pem terminal aes C1sc0123
+ 
+ 
+ turn off password auth
+ !UTM-PH
+ conf t
+  ip ssh server algorithm authent publickey
+  no ip ssh server algorithm authent password
+  no ip ssh server algorithm authent keyboard
+  end
+  
+  
+Network automation
+Data Plane
+Control Plane
+Management Plane
