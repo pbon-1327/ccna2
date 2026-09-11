@@ -1038,3 +1038,341 @@ Network automation
 Data Plane
 Control Plane
 Management Plane
+
+
+===============================================================================
+
+Day 5
+
+2001:db8:: /64 (2001 - Used for documentation)
+:: /0 (Default gateway)
+fe80::a:0:0:f /10 (Link-Local)
+fd00:0:0:3000:: /64 (Unique Local) - Private
+::1 /128 (Loopback)
+ff00::beef:a00a:aa0:0:0 /12 (Multicast Address)
+
+/67 (5 butas, 1st, 2i)
+/126 (6 butas, 4th, 4i)
+/39 (3 butas, 2nd, 2i)
+/106 (7 butas, 3rd, 4i)
+
+==============================================================
+
+IPV6 Subnetting
+
+1. Subnet for 8 offices using the network address fd00:1::/64
+C: 8 offices = 3 bits
+A: /64 + 3 bits = /67 (5 Butas, 1st Hexadecimal, 2i)
+
+fd00:0001:0000:0000:0000:0000:0000:0000
+                   :2000:
+                   :4000:
+				   :6000:
+				   :8000:
+				   :A000:
+				   :C000:
+				   :E000:
+
+
+2. Subnet for 32 offices using the network address fd00:2::/64 - Find the 4th office
+C: 32 offices = 5 bits
+A: /64 + 5 bits = /69 (5 butas, 2nd hex, 8i)
+
+fd00:0002:0000:0000:0000:0000:0000:0000
+                   :0800:
+				   :1000:
+				   :1800:
+				   :2000:
+
+Network:			fd00:0002:0000:0000:1800:0000:0000:0000 /69
+	First Valid:	fd00:0002:0000:0000:1800:0000:0000:0001
+	Last Valid:		fd00:0002:0000:0000:1FFF:FFFF:FFFF:FFFF
+
+Anycast = /1 - /120
+Last Non Anycast:	fd00:0002:0000:0000:1FFF:FFFF:FFFF:FF7F
+First Anycast:		fd00:0002:0000:0000:1FFF:FFFF:FFFF:FF80
+Last Anycast:		fd00:0002:0000:0000:1FFF:FFFF:FFFF:FFFF
+
+Not Network:		fd00:0002:0000:0000:2000:0000:0000:0000
+
+==========================================================================
+
+!@I4
+conf t
+ ipv6 unicast-routing
+ int e0/0
+  ipv6 add fd00:0002:0000:0000:1800:0000:0000:0001/69
+  no shut
+  end
+  
+!@R4
+conf t
+ ipv6 unicast-routing
+ int e0/0
+  ipv6 add fd00:0002:0000:0000:1FFF:FFFF:FFFF:FFFF/69
+  no shut
+  end
+ 
+
+3. Find the 1st and last IPv6 address of 2001:db8:12::/126
+
+Network:		2001:0db8:0012:0000:0000:0000:0000:0000
+First Valid: 	2001:0db8:0012:0000:0000:0000:0000:0001
+Last Valid:		2001:0db8:0012:0000:0000:0000:0000:0003
+
+Not: 			2001:0db8:0012:0000:0000:0000:0000:0004
+
+								 								  
+!@R4								  
+conf t
+ ipv6 unicast-routing
+ int e0/1
+  ipv6 add 2001:0db8:0012:0000:0000:0000:0000:0001/126
+  no shut
+  end
+
+!@P1
+conf t
+ ipv6 unicast-routing
+ int e0/1
+  ipv6 add 2001:0db8:0012:0000:0000:0000:0000:0003/126
+  no shut
+  end
+  
+4. Subnet for 52 offices using the network address fd00:3:0:33::/100. Determine the 3rd subnet.
+
+C: 52 offices = 6 bits
+   /100 + 6 bits = 106 bits (7 butas, 3nd, 4i)
+A: fd00:0003:0000:0033:0000:0000:0000:0000:
+								:0000:
+								:0040:
+								:0080:
+								:00C0
+
+Network: fd00:0003:0000:0033:0000:0000:0080:0000
+First IP = +1 sa Network
+		fd00:0003:0000:0033:0000:0000:0080:0001
+
+First Anycast
+
+
+Last IP (Non Any) = -1 sa First Anycast
+
+fd00:0003:0000:0033:0000:0000:008F:FFFF
+
+
+fd00:0003:0000:0033:0000:0000:008F:FF7F/106
+
+
+fd00:0003:0000:0033:0000:0000:0080:0000
+
+
+
+
+!@R4
+conf t
+ ipv6 unicast-routing
+ int e0/3
+  ipv6 add fd00:0003:0000:0033:0000:0000:0080:0001/126
+  no shut
+  end
+
+!@R3
+conf t
+ ipv6 unicast-routing
+ int e0/3
+  ipv6 add fd00:0003:0000:0033:0000:0000:008F:FF7F/106
+  no shut
+  end
+  
+==========================================================
+
+IPv6 addressing
+1. Manual /64
+2. Half network | host   -   EUI-64
+3. Auto SLACC
+4. DHCPv6
+
+
+!@EDGE
+conf t
+ ipv6 unicast-routing
+ int g0/0/1
+  ipv6 add fd00:31::/64 eui-64
+  no shut
+  end
+show int g0/0/1	| inc bia
+
+
+
+conf t
+ ipv6 unicast-routing
+ int g0/0/1
+  ipv6 add autoconfig
+  no shut
+  end
+show int g0/0/1	| inc bia
+
+
+
+============================================================
+
+!@I4
+conf t
+ ipv6 route 2001:db8:12::3/128 fd00:0002:0000:0000:1FFF:FFFF:FFFF:FF7F
+ end
+
+TASK: Make I4 and P1 pingable via IPV6
+I4:  fd00:0002:0000:0000:1800:0000:0000:0001/69
+R4: e0/0: fd00:0002:0000:0000:1FFF:FFFF:FFFF:FF7F
+R4: e0/1: 2001:db8:12::1
+
+P1: e0/1: 2001:db8:12::3
+
+!@P1
+conf t
+ ipv6 route 2001:db8:12::3/128 2001:db8:12::1
+ end
+
+Default route
+ ipv6 route ::/0 2001:db8:12::1
+ 
+
+network static route
+host route
+
+==========================================================
+
+A company plans to deploy 16 new sites
+Use the network address space of 2001:db8::/56
+Use the second subnet:
+
+C: 16 sites = 4 bits
+A: /56 + 4 bits = /60 (4 butas, 3rd, 1i)
+I: 2001:0db8:0000:0000:0000:0000:0000:0000
+                 :0000:
+			     :0010:
+
+First valid: 2001:0db8:0000:0010:0000:0000:0000:0001
+Last valid: 2001:0db8:0000:01FF:FFFF:FFFF:FFFF:FFFF
+
+Last non anycast: 2001:0db8:0000:01FF:FFFF:FFFF:FFFF:FF7F
+First Anycast: 2001:0db8:0000:01FF:FFFF:FFFF:FFFF:FF80
+Last anycast: 2001:0db8:0000:01FF:FFFF:FFFF:FFFF:FFFF
+
+Not network: 2001:0db8:0000:0020:0000:0000:0000:0000
+
+
+show config that will apply a unique 64-bit interface identifier on e0/0 on SW101 (EUI-64)
+
+conf t
+ ipv6 unicast-routing
+ int e0/0
+  ipv6 add 2001:0db8:0000:0010:0000:0000:0000:0000/60 eui-64
+  no shut
+  no switchport -----> Don't forget if it's a switch
+  end
+show int e0/0	| inc bia
+
+
+show config that will apply a unique 64-bit interface identifier on e0/0 on SW102
+
+conf t
+ ipv6 unicast-routing
+ int e0/0
+  ipv6 add 2001:0db8:0000:0010:0000:0000:0000:0000/60 eui-64
+  no shut
+  no switchport
+  end
+
+==================================================
+
+!@CoreTAAS, CoreBABA
+conf t
+ default int range fa0/10-12
+ end
+
+!@CoreTAAS
+conf t
+ no ip routing
+ end
+
+
+===================================================
+
+cdp run
+lldp run
+
+do sh cdp neighbor
+do sh lldp neighbor
+
+
+Master of switching
+802.1q (Tagged)
+802.1d
+802.1w
+802.1s
+
+Native VLAN - Untagged traffic
+
+
+
+
+conf t
+ int range eth0/1-3,eth1/0
+  switchport trunk encapsulation dot1q
+  switchport mode trunk
+  switchport trunk allowed vlan all
+  switchport trunk native vlan 1
+  no shut
+  end
+show int trunk
+
+C1
+24577
+aabb.cc00.0600
+
+C2
+32769
+aabb.cc00.0700
+
+A1
+32769
+aabb.cc00.0300
+
+A2
+32769
+aabb.cc00.0400
+
+
+DP - Designated Port - Lowest Bridge ID
+AP - Alternate Port
+RP - Root Port - lowest port # going to DP (Only 1 RP per switch)
+
+
+STP Cost
+ - eth 100
+ - fa 19
+ - gig 4
+ - 10g 2
+
+
+!@CoreTAAS
+conf t
+ int range fa0/10-12
+  channel-group 1 mode active
+  channel-protocol lacp
+  end
+show int po1 | inc BW
+
+
+!@C1
+conf t
+ hostname CTAAS-GLOBE
+ !
+ int vlan 10
+  standby 1 ip 10.2.1.6
+  standby 1 preempt
+  standby 1 Priority 100
+  standby 1 Track 1 decrement 60
+  end
